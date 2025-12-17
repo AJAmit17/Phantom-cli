@@ -13,10 +13,16 @@ import { Github } from "lucide-react";
 
 export default function SignUpPage() {
     const handleGitHubSignUp = async () => {
-        await authClient.signIn.social({
-            provider: "github",
-            callbackURL: "/dashboard",
-        });
+        try {
+            console.log('Starting GitHub sign up...');
+            const result = await authClient.signIn.social({
+                provider: "github",
+                callbackURL: "/dashboard",
+            });
+            console.log('Sign up result:', result);
+        } catch (error) {
+            console.error('GitHub sign up error:', error);
+        }
     };
 
     return (
