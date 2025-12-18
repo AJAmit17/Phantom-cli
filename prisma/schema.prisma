@@ -21,10 +21,11 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
   sessions      Session[]
   accounts      Account[]
-  
+  conversations Conversation[]
+  apiKeys       ApiKey[]
+
   @@map("user")
 }
 
@@ -38,28 +39,30 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("session")
+  @@index([userId])
 }
 
 model Account {
-  id           String   @id @default(cuid())
-  accountId    String
-  providerId   String
-  userId       String
-  accessToken  String?
-  refreshToken String?
-  idToken      String?
-  accessTokenExpiresAt DateTime?
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
-  scope        String?
-  password     String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([providerId, accountId])
   @@map("account")
+  @@index([userId])
 }
 
 model Verification {
@@ -69,9 +72,68 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
+
   @@unique([identifier, value])
   @@map("verification")
+  @@index([identifier])
+}
+
+model DeviceCode {
+  id              String    @id
+  deviceCode      String
+  userCode        String
+  userId          String?
+  expiresAt       DateTime
+  status          String
+  lastPolledAt    DateTime?
+  pollingInterval Int?
+  clientId        String?
+  scope           String?
+
+  @@map("deviceCode")
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  mode      String    @default("chat") // chat , tool , agent
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("conversation")
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String       // user, assistant, system, tool
+  content        String       @db.Text // JSON string for complex content
+  createdAt      DateTime     @default(now())
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  @@map("message")
+  @@index([conversationId])
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   // User-friendly name for the key (e.g., "My Personal Key")
+  key       String   // The actual API key (store encrypted in production)
+  provider  String   @default("google") // Only google for now
+  modelId   String   @default("gemini-1.5-flash") // Model to use with this key
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("apiKey")
+  @@index([userId])
 }
 
 model Test {

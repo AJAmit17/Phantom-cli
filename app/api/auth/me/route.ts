@@ -1,0 +1,23 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return NextResponse.json({ error: "No active session" }, { status: 401 });
+    }
+
+    return NextResponse.json(session);
+  } catch (error) {
+    console.error("Session error:", error);
+    return NextResponse.json(
+      { error: "Failed to get session" },
+      { status: 500 }
+    );
+  }
+}

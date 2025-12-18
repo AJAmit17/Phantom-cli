@@ -1,12 +1,16 @@
 import { createAuthClient } from "better-auth/react";
+import { deviceAuthorizationClient } from "better-auth/client/plugins"
 
 export const authClient = createAuthClient({
-    baseURL: process.env.NETXT_PUBLIC_BETTER_AUTH_URL || "https://phantom-agent-cli.vercel.app",
+    baseURL: "https://phantom-agent-cli.vercel.app",
+    plugins: [
+        deviceAuthorizationClient(),
+    ],
 });
 
-export const { 
-    signIn, 
-    signUp, 
-    signOut, 
-    useSession 
+export const {
+    signIn,
+    signUp,
+    signOut,
+    useSession
 } = authClient;
