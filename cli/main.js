@@ -6,6 +6,10 @@ const { Command } = require("commander");
 const { login, logout, whoami } = require("./commands/auth/login");
 const { wakeUp } = require("./commands/ai/wakeup");
 const { apiKeyCommand } = require("./commands/api-key/manage");
+<<<<<<< Updated upstream
+=======
+const configCommand = require("./commands/config");
+>>>>>>> Stashed changes
 
 async function main() {
   // Display banner
@@ -26,6 +30,10 @@ async function main() {
     .description("Phantom CLI - AI Chat and Device Flow Authentication");
 
   // Add commands
+<<<<<<< Updated upstream
+=======
+  program.addCommand(configCommand);
+>>>>>>> Stashed changes
   program.addCommand(wakeUp);
   program.addCommand(login);
   program.addCommand(logout);

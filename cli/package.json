@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "name": "@phantom/cli",
   "version": "1.0.0",
   "description": "Phantom CLI - AI-powered CLI with device flow authentication",
@@ -37,15 +38,71 @@
     "copyfiles": "^2.4.1",
     "rimraf": "^5.0.5"
   },
+=======
+  "name": "@phantom-ai/cli",
+  "version": "1.0.0",
+  "description": "AI-powered CLI with device flow authentication, tool calling, and autonomous agent mode",
+  "main": "main.js",
+  "bin": {
+    "phantom": "./main.js",
+    "phantom-cli": "./main.js"
+  },
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ai",
+    "cli",
+    "gemini",
+    "chat",
+    "agent",
+    "tool-calling",
+    "device-flow",
+    "oauth"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+>>>>>>> Stashed changes
   "engines": {
     "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
+<<<<<<< Updated upstream
     "url": "https://github.com/your-username/phantom-cli.git"
   },
   "bugs": {
     "url": "https://github.com/your-username/phantom-cli/issues"
   },
   "homepage": "https://github.com/your-username/phantom-cli#readme"
+=======
+    "url": "https://github.com/AJAmit17/Phantom-cli.git"
+  },
+    "bugs": {
+        "url": "https://github.com/AJAmit17/Phantom-cli/issues"
+  },
+  "homepage": "https://github.com/AJAmit17/Phantom-cli#readme",
+  "dependencies": {
+    "@ai-sdk/google": "^2.0.49",
+    "@clack/prompts": "^0.7.0",
+    "ai": "^5.0.115",
+    "boxen": "^5.1.2",
+    "chalk": "^4.1.2",
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.7",
+    "figlet": "^1.7.0",
+    "marked": "^12.0.0",
+    "marked-terminal": "^7.0.0",
+    "node-fetch": "^2.7.0",
+    "ora": "^5.4.1",
+    "yocto-spinner": "^0.1.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {},
+  "preferGlobal": true,
+  "publishConfig": {
+    "access": "public"
+  }
+>>>>>>> Stashed changes
 }
