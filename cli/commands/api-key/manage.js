@@ -1,20 +1,12 @@
 const chalk = require("chalk");
 const { Command } = require("commander");
 const { intro, outro, text, confirm, isCancel, cancel, select } = require("@clack/prompts");
-<<<<<<< Updated upstream
-=======
 const { getServerUrl, requireAuth } = require("../../utils/config");
->>>>>>> Stashed changes
 const fs = require("fs").promises;
 const path = require("path");
 const os = require("os");
 
-<<<<<<< Updated upstream
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-const CONFIG_DIR = path.join(os.homedir(), ".orbital-cli");
-=======
 const CONFIG_DIR = path.join(os.homedir(), ".phantom-cli");
->>>>>>> Stashed changes
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 
 // Load token for authenticated requests
@@ -63,20 +55,11 @@ apiKeyCommand
     const modelId = await select({
       message: "Select your Gemini model:",
       options: [
-<<<<<<< Updated upstream
-        { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash (Fast, Recommended)" },
-        { value: "gemini-1.5-flash-8b", label: "Gemini 1.5 Flash 8B (Fastest)" },
-        { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro (Best Quality)" },
-        { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash (Latest)" },
-        { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-        { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro (Most Advanced)" },
-=======
         { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash (Stable, Recommended)" },
         { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash (Latest)" },
         { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro (Best Quality)" },
         { value: "gemini-exp-1206", label: "Gemini Experimental 1206" },
         { value: "gemini-flash-latest", label: "Gemini Flash Latest (Auto-updated)" },
->>>>>>> Stashed changes
       ],
     });
 
@@ -128,10 +111,7 @@ apiKeyCommand
       const token = await getStoredToken();
       if (token) {
         try {
-<<<<<<< Updated upstream
-=======
           const BASE_URL = await getServerUrl();
->>>>>>> Stashed changes
           const response = await fetch(`${BASE_URL}/api/api-keys`, {
             method: "POST",
             headers: {

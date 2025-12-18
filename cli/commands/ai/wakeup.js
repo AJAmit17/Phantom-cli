@@ -1,16 +1,5 @@
 const chalk = require("chalk");
 const { Command } = require("commander");
-<<<<<<< Updated upstream
-const yoctoSpinner = require("yocto-spinner");
-const { select, intro, outro } = require("@clack/prompts");
-const { requireAuth } = require("../auth/login");
-const { startChat } = require("../../chat/chat-with-ai");
-
-async function wakeUpAction() {
-  const token = await requireAuth();
-
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-=======
 const yoctoSpinner = require("yocto-spinner").default;
 const { select, intro, outro } = require("@clack/prompts");
 const { startChat } = require("../../chat/chat-with-ai");
@@ -30,17 +19,12 @@ async function wakeUpAction() {
 
   const token = await requireAuth();
   const BASE_URL = await getServerUrl();
->>>>>>> Stashed changes
 
   const spinner = yoctoSpinner({ text: "Fetching user information..." });
   spinner.start();
 
   try {
-<<<<<<< Updated upstream
-    const response = await fetch(`${BASE_URL}/api/auth/me`, {
-=======
     const response = await fetch(`${BASE_URL}/api/me`, {
->>>>>>> Stashed changes
       headers: {
         Authorization: `Bearer ${token.access_token}`,
       },
@@ -64,8 +48,6 @@ async function wakeUpAction() {
           hint: "Simple chat with Gemini AI",
         },
         {
-<<<<<<< Updated upstream
-=======
           value: "tool",
           label: "Tool Calling",
           hint: "Chat with AI that can use tools",
@@ -76,7 +58,6 @@ async function wakeUpAction() {
           hint: "Autonomous AI agent (advanced)",
         },
         {
->>>>>>> Stashed changes
           value: "conversations",
           label: "View Conversations",
           hint: "See your conversation history",
@@ -88,24 +69,18 @@ async function wakeUpAction() {
       case "chat":
         await startChat(session.user, token);
         break;
-<<<<<<< Updated upstream
-=======
       case "tool":
         await startToolChat(session.user, token);
         break;
       case "agent":
         await startAgentChat(session.user, token);
         break;
->>>>>>> Stashed changes
       case "conversations":
         await viewConversations(session.user, token);
         break;
     }
-<<<<<<< Updated upstream
-=======
 
     outro(chalk.green("✨ Thanks for using Phantom AI!"));
->>>>>>> Stashed changes
   } catch (error) {
     spinner.error("Failed to fetch user information");
     console.error(chalk.red("\n❌ Error:"), error.message);

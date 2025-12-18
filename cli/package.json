@@ -1,44 +1,4 @@
 {
-<<<<<<< Updated upstream
-  "name": "@phantom/cli",
-  "version": "1.0.0",
-  "description": "Phantom CLI - AI-powered CLI with device flow authentication",
-  "main": "dist/main.js",
-  "bin": {
-    "phantom": "./dist/main.js"
-  },
-  "type": "commonjs",
-  "scripts": {
-    "start": "node dist/main.js",
-    "build": "npm run clean && npm run copy-files",
-    "copy-files": "copyfiles -u 1 \"src/**/*\" dist",
-    "clean": "rimraf dist",
-    "prepublishOnly": "npm run build"
-  },
-  "keywords": [
-    "cli",
-    "ai",
-    "gemini",
-    "device-flow",
-    "oauth",
-    "chat"
-  ],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "@clack/prompts": "^0.11.0",
-    "boxen": "^7.1.1",
-    "chalk": "^4.1.2",
-    "commander": "^14.0.2",
-    "figlet": "^1.9.3",
-    "open": "^8.4.2",
-    "yocto-spinner": "^0.1.0"
-  },
-  "devDependencies": {
-    "copyfiles": "^2.4.1",
-    "rimraf": "^5.0.5"
-  },
-=======
   "name": "@phantom-ai/cli",
   "version": "1.0.0",
   "description": "AI-powered CLI with device flow authentication, tool calling, and autonomous agent mode",
@@ -63,20 +23,11 @@
   ],
   "author": "Your Name",
   "license": "MIT",
->>>>>>> Stashed changes
   "engines": {
     "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-<<<<<<< Updated upstream
-    "url": "https://github.com/your-username/phantom-cli.git"
-  },
-  "bugs": {
-    "url": "https://github.com/your-username/phantom-cli/issues"
-  },
-  "homepage": "https://github.com/your-username/phantom-cli#readme"
-=======
     "url": "https://github.com/AJAmit17/Phantom-cli.git"
   },
     "bugs": {
@@ -104,5 +55,4 @@
   "publishConfig": {
     "access": "public"
   }
->>>>>>> Stashed changes
 }

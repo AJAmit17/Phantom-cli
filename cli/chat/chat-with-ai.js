@@ -1,18 +1,11 @@
 const chalk = require("chalk");
 const boxen = require("boxen");
 const { text, isCancel, cancel } = require("@clack/prompts");
-<<<<<<< Updated upstream
-const yoctoSpinner = require("yocto-spinner");
-
-async function startChat(user, token) {
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-=======
 const yoctoSpinner = require("yocto-spinner").default;
 const { getServerUrl } = require("../utils/config");
 
 async function startChat(user, token) {
   const BASE_URL = await getServerUrl();
->>>>>>> Stashed changes
   let conversationId = null;
 
   const helpBox = boxen(
@@ -80,14 +73,10 @@ async function startChat(user, token) {
       });
 
       if (!response.ok) {
-<<<<<<< Updated upstream
-        throw new Error("Failed to get response");
-=======
         const errorData = await response.json().catch(() => ({}));
         console.log(chalk.gray("\n🔍 DEBUG - Response status:"), response.status);
         console.log(chalk.gray("🔍 DEBUG - Error data:"), JSON.stringify(errorData, null, 2));
         throw new Error(errorData.error || "Failed to get response");
->>>>>>> Stashed changes
       }
 
       const data = await response.json();

@@ -1,94 +1,5 @@
 const chalk = require("chalk");
 const { Command } = require("commander");
-<<<<<<< Updated upstream
-const yoctoSpinner = require("yocto-spinner");
-const { cancel, confirm, intro, isCancel, outro, text } = require("@clack/prompts");
-const open = require("open");
-const fs = require("fs").promises;
-const path = require("path");
-const os = require("os");
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-const CONFIG_DIR = path.join(os.homedir(), ".orbital-cli");
-const TOKEN_FILE = path.join(CONFIG_DIR, "token.json");
-
-// ============================================
-// TOKEN MANAGEMENT
-// ============================================
-
-async function getStoredToken() {
-  try {
-    const data = await fs.readFile(TOKEN_FILE, "utf-8");
-    const token = JSON.parse(data);
-    return token;
-  } catch (error) {
-    return null;
-  }
-}
-
-async function storeToken(token) {
-  try {
-    await fs.mkdir(CONFIG_DIR, { recursive: true });
-
-    const tokenData = {
-      access_token: token.access_token,
-      token_type: token.token_type || "Bearer",
-      expires_at: token.expires_in
-        ? new Date(Date.now() + token.expires_in * 1000).toISOString()
-        : null,
-      created_at: new Date().toISOString(),
-    };
-
-    await fs.writeFile(TOKEN_FILE, JSON.stringify(tokenData, null, 2), "utf-8");
-    return true;
-  } catch (error) {
-    console.error(chalk.red("Failed to store token:"), error.message);
-    return false;
-  }
-}
-
-async function clearStoredToken() {
-  try {
-    await fs.unlink(TOKEN_FILE);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function isTokenExpired() {
-  const token = await getStoredToken();
-  if (!token || !token.expires_at) {
-    return true;
-  }
-
-  const expiresAt = new Date(token.expires_at);
-  const now = new Date();
-
-  return expiresAt.getTime() - now.getTime() < 5 * 60 * 1000;
-}
-
-async function requireAuth() {
-  const token = await getStoredToken();
-
-  if (!token) {
-    console.log(
-      chalk.red("❌ Not authenticated. Please run 'pnpm cli login' first.")
-    );
-    process.exit(1);
-  }
-
-  if (await isTokenExpired()) {
-    console.log(
-      chalk.yellow("⚠️  Your session has expired. Please login again.")
-    );
-    console.log(chalk.gray("   Run: pnpm cli login\n"));
-    process.exit(1);
-  }
-
-  return token;
-}
-=======
 const yoctoSpinner = require("yocto-spinner").default;
 const { cancel, confirm, intro, isCancel, outro, text } = require("@clack/prompts");
 const open = require("open");
@@ -100,7 +11,6 @@ const {
   isTokenExpired,
   requireAuth,
 } = require("../../utils/config");
->>>>>>> Stashed changes
 
 // ============================================
 // LOGIN COMMAND
@@ -128,16 +38,6 @@ async function loginAction() {
   spinner.start();
 
   try {
-<<<<<<< Updated upstream
-    // Request device code from the Next.js API
-    const response = await fetch(`${BASE_URL}/api/auth/device/authorize`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id: "orbital-cli",
-      }),
-    });
-=======
     const BASE_URL = await getServerUrl();
     console.log(chalk.gray("\n🔍 DEBUG - Server URL:"), BASE_URL);
     console.log(chalk.gray("🔍 DEBUG - Requesting device authorization..."));
@@ -153,7 +53,6 @@ async function loginAction() {
     });
     
     console.log(chalk.gray("🔍 DEBUG - Device code response status:"), response.status);
->>>>>>> Stashed changes
 
     if (!response.ok) {
       throw new Error("Failed to request device authorization");
@@ -161,12 +60,9 @@ async function loginAction() {
 
     const data = await response.json();
     spinner.stop();
-<<<<<<< Updated upstream
-=======
     
     console.log(chalk.gray("\n🔍 DEBUG - Device authorization response:"));
     console.log(chalk.gray(JSON.stringify(data, null, 2)));
->>>>>>> Stashed changes
 
     const {
       device_code,
@@ -176,8 +72,6 @@ async function loginAction() {
       interval = 5,
       expires_in,
     } = data;
-<<<<<<< Updated upstream
-=======
     
     console.log(chalk.gray("\n🔍 DEBUG - Extracted values:"));
     console.log(chalk.gray("  - Device Code:"), device_code?.substring(0, 10) + "...");
@@ -185,7 +79,6 @@ async function loginAction() {
     console.log(chalk.gray("  - Verification URI:"), verification_uri);
     console.log(chalk.gray("  - Interval:"), interval);
     console.log(chalk.gray("  - Expires In:"), expires_in);
->>>>>>> Stashed changes
 
     console.log("");
     console.log(chalk.cyan("📱 Device Authorization Required"));
@@ -222,35 +115,23 @@ async function loginAction() {
       await new Promise((resolve) => setTimeout(resolve, interval * 1000));
 
       try {
-<<<<<<< Updated upstream
-=======
         console.log(chalk.gray("\n🔍 DEBUG - Polling for token (attempt)"));
->>>>>>> Stashed changes
         const tokenResponse = await fetch(`${BASE_URL}/api/auth/device/token`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             device_code,
-<<<<<<< Updated upstream
-            grant_type: "urn:ietf:params:oauth:grant-type:device_code",
-          }),
-        });
-=======
             client_id: "phantom-cli",
             grant_type: "urn:ietf:params:oauth:grant-type:device_code",
           }),
         });
         
         console.log(chalk.gray("🔍 DEBUG - Token response status:"), tokenResponse.status);
->>>>>>> Stashed changes
 
         if (tokenResponse.ok) {
           const tokenData = await tokenResponse.json();
           pollSpinner.success("Authorization successful!");
 
-<<<<<<< Updated upstream
-          await storeToken(tokenData);
-=======
           console.log(chalk.cyan("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
           console.log(chalk.cyan.bold("🔍 DETAILED TOKEN DEBUG INFO"));
           console.log(chalk.cyan("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
@@ -276,7 +157,6 @@ async function loginAction() {
           console.log(chalk.gray("\n💾 Token Data Stored in token.json:"));
           console.log(JSON.stringify(stored, null, 2));
           console.log(chalk.cyan("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"));
->>>>>>> Stashed changes
           authorized = true;
 
           console.log("");
@@ -286,14 +166,10 @@ async function loginAction() {
           outro(chalk.green("Happy coding! 🚀"));
         } else {
           const errorData = await tokenResponse.json();
-<<<<<<< Updated upstream
-          if (errorData.error !== "authorization_pending") {
-=======
           console.log(chalk.gray("🔍 DEBUG - Token response error:"), errorData.error);
           if (errorData.error !== "authorization_pending") {
             console.log(chalk.red("\n❌ ERROR - Token request failed:"));
             console.log(JSON.stringify(errorData, null, 2));
->>>>>>> Stashed changes
             throw new Error(errorData.error_description || "Authorization failed");
           }
         }
@@ -350,40 +226,6 @@ async function logoutAction() {
 // WHOAMI COMMAND
 // ============================================
 
-<<<<<<< Updated upstream
-async function whoamiAction() {
-  const token = await requireAuth();
-
-  const spinner = yoctoSpinner({ text: "Fetching user information..." });
-  spinner.start();
-
-  try {
-    const response = await fetch(`${BASE_URL}/api/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${token.access_token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch user information");
-    }
-
-    const session = await response.json();
-    spinner.success("User information retrieved");
-
-    console.log("");
-    console.log(chalk.cyan.bold("👤 User Information"));
-    console.log("");
-    console.log(`${chalk.gray("Name:")}     ${session.user.name || "N/A"}`);
-    console.log(`${chalk.gray("Email:")}    ${session.user.email}`);
-    console.log(`${chalk.gray("User ID:")}  ${session.user.id}`);
-    console.log("");
-  } catch (error) {
-    spinner.error("Failed to fetch user information");
-    console.error(chalk.red("\n❌ Error:"), error.message);
-    process.exit(1);
-  }
-=======
 async function whoamiAction(opts) {
   const token = await requireAuth();
   if (!token?.access_token) {
@@ -442,7 +284,6 @@ async function whoamiAction(opts) {
 🔑 Session Token: ${session?.token || 'N/A'}
 ⏰ Expires: ${session?.expiresAt ? new Date(session.expiresAt).toLocaleString() : 'N/A'}`)
   );
->>>>>>> Stashed changes
 }
 
 // ============================================
