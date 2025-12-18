@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Send, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,12 +19,35 @@ interface Message {
   createdAt: Date;
 }
 
+interface SendMessageParams {
+  message: string;
+  conversationId: string | null;
+}
+
+interface ChatResponse {
+  conversationId: string;
+  userMessage: Message;
+  assistantMessage: Message;
+  toolCalls?: any[];
+  toolResults?: any[];
+}
+
+const sendMessage = async (params: SendMessageParams): Promise<ChatResponse> => {
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) throw new Error("Failed to send message");
+  return response.json();
+};
+
 export default function ChatPage() {
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -41,55 +65,47 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    const userMessage = input.trim();
-    setInput("");
-    setIsLoading(true);
-
-    // Add user message optimistically
-    const tempUserMessage: Message = {
-      id: `temp-${Date.now()}`,
-      role: "user",
-      content: userMessage,
-      createdAt: new Date(),
-    };
-    setMessages((prev) => [...prev, tempUserMessage]);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: userMessage,
-          conversationId,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to send message");
-
-      const data = await response.json();
-
+  // Mutation for sending messages
+  const sendMessageMutation = useMutation({
+    mutationFn: sendMessage,
+    onMutate: async (variables) => {
+      // Optimistically add user message
+      const tempUserMessage: Message = {
+        id: `temp-${Date.now()}`,
+        role: "user",
+        content: variables.message,
+        createdAt: new Date(),
+      };
+      setMessages((prev) => [...prev, tempUserMessage]);
+      return { tempUserMessage };
+    },
+    onSuccess: (data, variables, context) => {
       // Update conversation ID if it's a new conversation
       if (data.conversationId && !conversationId) {
         setConversationId(data.conversationId);
       }
 
-      // Replace temp message with real one and add assistant response
+      // Replace temp message with real messages
       setMessages((prev) => [
-        ...prev.filter((m) => m.id !== tempUserMessage.id),
+        ...prev.filter((m) => m.id !== context?.tempUserMessage.id),
         data.userMessage,
         data.assistantMessage,
       ]);
-    } catch (error) {
+    },
+    onError: (error, variables, context) => {
       toast.error("Failed to send message");
       // Remove the temp message on error
-      setMessages((prev) => prev.filter((m) => m.id !== tempUserMessage.id));
-    } finally {
-      setIsLoading(false);
-    }
+      setMessages((prev) => prev.filter((m) => m.id !== context?.tempUserMessage.id));
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || sendMessageMutation.isPending) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    sendMessageMutation.mutate({ message: userMessage, conversationId });
   };
 
   if (isPending) {
@@ -188,7 +204,7 @@ export default function ChatPage() {
               </div>
             ))
           )}
-          {isLoading && (
+          {sendMessageMutation.isPending && (
             <div className="flex gap-4 justify-start">
               <Avatar className="w-10 h-10 border-2 border-blue-500/50">
                 <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
@@ -223,14 +239,14 @@ export default function ChatPage() {
               }}
               placeholder="Type your message... (Shift + Enter for new line)"
               className="min-h-[60px] max-h-[200px] bg-gray-800 border-gray-700 focus:border-blue-500 text-white placeholder:text-gray-500"
-              disabled={isLoading}
+              disabled={sendMessageMutation.isPending}
             />
             <Button
               type="submit"
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || sendMessageMutation.isPending}
               className="h-[60px] px-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
             >
-              {isLoading ? (
+              {sendMessageMutation.isPending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <Send className="w-5 h-5" />

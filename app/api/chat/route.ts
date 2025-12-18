@@ -15,19 +15,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { message, conversationId } = await req.json();
+    const { message, conversationId, mode, enabledTools } = await req.json();
 
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
     const userId = session.user.id;
+    
+    // Log request details for debugging
+    console.log(`[Chat API] Mode: ${mode || "chat"}, Tools: ${enabledTools ? enabledTools.join(", ") : "none"}`);
 
-    // Get or create conversation
+    // Get or create conversation with appropriate mode
     const conversation = await chatService.getOrCreateConversation(
       userId,
       conversationId,
-      "chat"
+      mode || "chat"
     );
 
     // Save user message
@@ -41,9 +44,14 @@ export async function POST(req: NextRequest) {
     const messages = await chatService.getMessages(conversation.id);
     const aiMessages = chatService.formatMessagesForAI(messages);
 
-    // Get AI response with user's API key if available
+    // Get AI response with user's API key and enabled tools
     const aiService = await AIService.forUser(userId);
-    const aiResponse = await aiService.sendMessage(aiMessages);
+    const aiResponse = await aiService.sendMessage(aiMessages, enabledTools);
+    
+    // Log tool usage
+    if (aiResponse.toolCalls && aiResponse.toolCalls.length > 0) {
+      console.log(`[Chat API] Tools called: ${aiResponse.toolCalls.map(tc => tc.toolName).join(", ")}`);
+    }
 
     // Save assistant message
     const assistantMessage = await chatService.addMessage({
@@ -72,6 +80,9 @@ export async function POST(req: NextRequest) {
         content: assistantMessage.content,
         createdAt: assistantMessage.createdAt,
       },
+      toolCalls: aiResponse.toolCalls,
+      toolResults: aiResponse.toolResults,
+      usage: aiResponse.usage,
     });
   } catch (error) {
     console.error("Chat API Error:", error);

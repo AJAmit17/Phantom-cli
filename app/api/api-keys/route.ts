@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, key, provider = "google", modelId = "gemini-1.5-flash" } = body;
+    const { name, key, provider = "google", modelId = "gemini-2.0-flash" } = body;
 
     if (!name || !key) {
       return NextResponse.json(

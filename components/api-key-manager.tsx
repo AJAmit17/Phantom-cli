@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { KeyRound, Plus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ApiKey {
@@ -41,107 +42,130 @@ interface ApiKey {
   updatedAt: string;
 }
 
+interface ApiKeysResponse {
+  apiKeys: ApiKey[];
+}
+
+// API functions
+const fetchApiKeys = async (): Promise<ApiKey[]> => {
+  const response = await fetch("/api/api-keys");
+  if (!response.ok) throw new Error("Failed to fetch API keys");
+  const data: ApiKeysResponse = await response.json();
+  return data.apiKeys;
+};
+
+const addApiKey = async (params: {
+  name: string;
+  key: string;
+  modelId: string;
+}) => {
+  const response = await fetch("/api/api-keys", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...params, provider: "google" }),
+  });
+  if (!response.ok) throw new Error("Failed to add API key");
+  return response.json();
+};
+
+const deleteApiKey = async (id: string) => {
+  const response = await fetch(`/api/api-keys/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) throw new Error("Failed to delete API key");
+  return response.json();
+};
+
+const toggleApiKey = async (params: { id: string; isActive: boolean }) => {
+  const response = await fetch(`/api/api-keys/${params.id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ isActive: !params.isActive }),
+  });
+  if (!response.ok) throw new Error("Failed to update API key");
+  return response.json();
+};
+
 export function ApiKeyManager() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [showKey, setShowKey] = useState<Record<string, boolean>>({});
 
   // Form state
   const [name, setName] = useState("");
   const [key, setKey] = useState("");
-  const [modelId, setModelId] = useState("gemini-1.5-flash");
+  const [modelId, setModelId] = useState("gemini-2.0-flash");
 
-  useEffect(() => {
-    fetchApiKeys();
-  }, []);
+  // Queries
+  const { data: apiKeys = [], isLoading } = useQuery({
+    queryKey: ["apiKeys"],
+    queryFn: fetchApiKeys,
+  });
 
-  const fetchApiKeys = async () => {
-    try {
-      const response = await fetch("/api/api-keys");
-      if (response.ok) {
-        const data = await response.json();
-        setApiKeys(data.apiKeys);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch API keys");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Mutations
+  const addMutation = useMutation({
+    mutationFn: addApiKey,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["apiKeys"] });
+      toast.success("API key added successfully");
+      setOpen(false);
+      setName("");
+      setKey("");
+      setModelId("gemini-2.0-flash");
+    },
+    onError: () => {
+      toast.error("Failed to add API key");
+    },
+  });
 
-  const handleAddKey = async () => {
+  const deleteMutation = useMutation({
+    mutationFn: deleteApiKey,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["apiKeys"] });
+      toast.success("API key deleted successfully");
+    },
+    onError: () => {
+      toast.error("Failed to delete API key");
+    },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: toggleApiKey,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["apiKeys"] });
+      toast.success(
+        `API key ${!variables.isActive ? "activated" : "deactivated"}`
+      );
+    },
+    onError: () => {
+      toast.error("Failed to update API key");
+    },
+  });
+
+  const handleAddKey = () => {
     if (!name || !key) {
       toast.error("Please fill in all fields");
       return;
     }
-
-    try {
-      const response = await fetch("/api/api-keys", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, key, provider: "google", modelId }),
-      });
-
-      if (response.ok) {
-        toast.success("API key added successfully");
-        setOpen(false);
-        setName("");
-        setKey("");
-        setModelId("gemini-1.5-flash");
-        fetchApiKeys();
-      } else {
-        toast.error("Failed to add API key");
-      }
-    } catch (error) {
-      toast.error("Failed to add API key");
-    }
+    addMutation.mutate({ name, key, modelId });
   };
 
-  const handleDeleteKey = async (id: string) => {
+  const handleDeleteKey = (id: string) => {
     if (!confirm("Are you sure you want to delete this API key?")) return;
-
-    try {
-      const response = await fetch(`/api/api-keys/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        toast.success("API key deleted successfully");
-        fetchApiKeys();
-      } else {
-        toast.error("Failed to delete API key");
-      }
-    } catch (error) {
-      toast.error("Failed to delete API key");
-    }
+    deleteMutation.mutate(id);
   };
 
-  const handleToggleActive = async (id: string, isActive: boolean) => {
-    try {
-      const response = await fetch(`/api/api-keys/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !isActive }),
-      });
-
-      if (response.ok) {
-        toast.success(`API key ${!isActive ? "activated" : "deactivated"}`);
-        fetchApiKeys();
-      } else {
-        toast.error("Failed to update API key");
-      }
-    } catch (error) {
-      toast.error("Failed to update API key");
-    }
+  const handleToggleActive = (id: string, isActive: boolean) => {
+    toggleMutation.mutate({ id, isActive });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>API Keys</CardTitle>
-          <CardDescription>Loading...</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Loading API Keys...
+          </CardTitle>
         </CardHeader>
       </Card>
     );
@@ -229,7 +253,15 @@ export function ApiKeyManager() {
                 <Button variant="outline" onClick={() => setOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleAddKey}>Add Key</Button>
+                <Button 
+                  onClick={handleAddKey}
+                  disabled={addMutation.isPending}
+                >
+                  {addMutation.isPending && (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  )}
+                  Add Key
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -272,15 +304,24 @@ export function ApiKeyManager() {
                     onClick={() =>
                       handleToggleActive(apiKey.id, apiKey.isActive)
                     }
+                    disabled={toggleMutation.isPending}
                   >
+                    {toggleMutation.isPending && (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    )}
                     {apiKey.isActive ? "Deactivate" : "Activate"}
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDeleteKey(apiKey.id)}
+                    disabled={deleteMutation.isPending}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {deleteMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>

@@ -127,7 +127,7 @@ model ApiKey {
   name      String   // User-friendly name for the key (e.g., "My Personal Key")
   key       String   // The actual API key (store encrypted in production)
   provider  String   @default("google") // Only google for now
-  modelId   String   @default("gemini-1.5-flash") // Model to use with this key
+  modelId   String   @default("gemini-2.0-flash") // Model to use with this key
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
